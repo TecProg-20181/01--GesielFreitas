@@ -1,5 +1,10 @@
 #include <stdio.h>
-
+// não alterar as variaveis i, j do for, pois são só auxiliares do for para percorrer uma matrix
+// tirar os ifs pela função que já está no codigo que não está sendo usado.
+// tem alguns lugares operadores ternarios que verifica os valores maximos entre dois numeros, ex: max, e criar min
+// usar o comando gitshash para juntar varios commits em um unico, ou usar o --amend
+//
+//
 typedef struct _pixel {
     unsigned short int r;
     unsigned short int g;
@@ -10,7 +15,7 @@ typedef struct _image {
     // [width][height][rgb]
     // 0 -> r
     // 1 -> g
-    // 2 -> b
+    // 2 -> b   gesiel usar a struct pixel
     unsigned short int pixel[512][512][3];
     unsigned int w;
     unsigned int h;
@@ -31,20 +36,19 @@ int pixel_igual(Pixel p1, Pixel p2) {
     return 0;
 }
 
+float calcula_media_img_pixel(Image img, int i, int j){
+
+    int media = 0;
+    media = (img.pixel[i][j][0] + img.pixel[i][j][1] + img.pixel[i][j][2]) / 3;
+    return media;   
+}
 
 Image escala_de_cinza(Image img) {
-    /*for (unsigned int i = 0; i < img.h; ++i) {
-        for (unsigned int j = 0; j < img.w; ++j) {
-            print("%u", img.pixel[i][j][0] + img.pixel[i][j][1] + img.pixel[i][j][2]);
-        }
-    }*/
-
+   
     for (unsigned int i = 0; i < img.h; ++i) {
         for (unsigned int j = 0; j < img.w; ++j) {
-            int media = img.pixel[i][j][0] +
-                        img.pixel[i][j][1] +
-                        img.pixel[i][j][2];
-            media /= 3;
+            int media = calcula_media_img_pixel(img, i, j);
+            
             img.pixel[i][j][0] = media;
             img.pixel[i][j][1] = media;
             img.pixel[i][j][2] = media;
@@ -53,12 +57,12 @@ Image escala_de_cinza(Image img) {
 
     return img;
 }
-
+// trocar os parametros do metodo pela struct image para preservar o objeto ver metodo acima
 void blur(unsigned int h, unsigned short int pixel[512][512][3], int T, unsigned int w) {
     for (unsigned int i = 0; i < h; ++i) {
         for (unsigned int j = 0; j < w; ++j) {
             Pixel media = {0, 0, 0};
-
+            // ternario verificar se pode usar max, ou criar min para substituir
             int menor_h = (h - 1 > i + T/2) ? i + T/2 : h - 1;
             int min_w = (w - 1 > j + T/2) ? j + T/2 : w - 1;
             for(int x = (0 > i - T/2 ? 0 : i - T/2); x <= menor_h; ++x) {
