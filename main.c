@@ -153,17 +153,20 @@ Image blur(Image img, int tamanho) {
     return img;
 }
 
-Image rotacionar90direita(Image img) {
+Image rotate_image90_right(Image img, int quantas_vezes) {
     Image rotacionada;
+    quantas_vezes %= 4;
 
     rotacionada.w = img.h;
     rotacionada.h = img.w;
 
-    for (unsigned int i = 0, y = 0; i < rotacionada.h; ++i, ++y) {
-        for (int j = rotacionada.w - 1, x = 0; j >= 0; --j, ++x) {
-            rotacionada.pixel[i][j][0] = img.pixel[x][y][0];
-            rotacionada.pixel[i][j][1] = img.pixel[x][y][1];
-            rotacionada.pixel[i][j][2] = img.pixel[x][y][2];
+    for (int k = 0; k < quantas_vezes; ++k) {
+        for (unsigned int i = 0, y = 0; i < rotacionada.h; ++i, ++y) {
+            for (int j = rotacionada.w - 1, x = 0; j >= 0; --j, ++x) {
+                rotacionada.pixel[i][j][0] = img.pixel[x][y][0];
+                rotacionada.pixel[i][j][1] = img.pixel[x][y][1];
+                rotacionada.pixel[i][j][2] = img.pixel[x][y][2];
+            }
         }
     }
 
@@ -245,10 +248,7 @@ int main() {
             case 4: { // Rotacao
                 int quantas_vezes = 0;
                 scanf("%d", &quantas_vezes);
-                quantas_vezes %= 4;
-                for (int j = 0; j < quantas_vezes; ++j) {
-                    img = rotacionar90direita(img);
-                }
+                img = rotate_image90_right(img, quantas_vezes);
                 break;
             }
             case 5: { // Espelhamento
