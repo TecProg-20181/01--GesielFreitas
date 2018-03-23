@@ -23,9 +23,23 @@ typedef struct _image {
 
 
 int max(int a, int b) {
-    if (a > b)
+    if(a >= b){
         return a;
-    return b;
+    }else{
+        return b;
+    }
+}
+
+int min(int a, int b){
+    if(a > b){
+        return b;
+    }else{
+        return a;
+    }
+}
+
+int mult(int a, int b){
+    return a * b;
 }
 
 int pixel_igual(Pixel p1, Pixel p2) {
@@ -43,7 +57,8 @@ float calcula_media_img_pixel(Image img, int i, int j){
     return media;   
 }
 
-Image escala_de_cinza(Image img) {
+
+Image gray_scale(Image img) {
    
     for (unsigned int i = 0; i < img.h; ++i) {
         for (unsigned int j = 0; j < img.w; ++j) {
@@ -57,32 +72,85 @@ Image escala_de_cinza(Image img) {
 
     return img;
 }
-// trocar os parametros do metodo pela struct image para preservar o objeto ver metodo acima
-void blur(unsigned int h, unsigned short int pixel[512][512][3], int T, unsigned int w) {
-    for (unsigned int i = 0; i < h; ++i) {
-        for (unsigned int j = 0; j < w; ++j) {
-            Pixel media = {0, 0, 0};
-            // ternario verificar se pode usar max, ou criar min para substituir
-            int menor_h = (h - 1 > i + T/2) ? i + T/2 : h - 1;
-            int min_w = (w - 1 > j + T/2) ? j + T/2 : w - 1;
-            for(int x = (0 > i - T/2 ? 0 : i - T/2); x <= menor_h; ++x) {
-                for(int y = (0 > j - T/2 ? 0 : j - T/2); y <= min_w; ++y) {
-                    media.r += pixel[x][y][0];
-                    media.g += pixel[x][y][1];
-                    media.b += pixel[x][y][2];
-                }
-            }
 
-            // printf("%u", media.r)
-            media.r /= T * T;
-            media.g /= T * T;
-            media.b /= T * T;
+int calculator_pixel_sepia(float mult1, float mult2, float mult3, Pixel pixel){
 
-            pixel[i][j][0] = media.r;
-            pixel[i][j][1] = media.g;
-            pixel[i][j][2] = media.b;
+    int pixel_calculator = pixel.r * mult1 + pixel.g * mult2 + pixel.b * mult3;
+
+    return pixel_calculator;
+}
+
+int calculator_menor_pixel(float mult1, float mult2, float mult3, Pixel pixel){
+    
+    int pixel_calculator = calculator_pixel_sepia(mult1, mult2, mult3, pixel);
+
+    int pixel_menor = min(255, pixel_calculator);
+}
+
+Image sepia_filter(Image img){
+
+    for (unsigned int x = 0; x < img.h; ++x) {
+        for (unsigned int j = 0; j < img.w; ++j) {
+            Pixel pixel = {0, 0, 0};
+            pixel.r = img.pixel[x][j][0];
+            pixel.g = img.pixel[x][j][1];
+            pixel.b = img.pixel[x][j][2];
+
+            int menor_r = calculator_menor_pixel(0.393, 0.769, 0.189, pixel);
+            img.pixel[x][j][0] = menor_r;
+
+            menor_r = calculator_menor_pixel(0.349, 0.686, 0.168, pixel);
+            img.pixel[x][j][1] = menor_r;
+            
+            menor_r = calculator_menor_pixel(0.272, 0.534, 0.131, pixel);
+            img.pixel[x][j][2] = menor_r;
         }
     }
+
+    return img;
+               
+}
+
+Pixel attach_in_media_tamanho(Pixel media, int tamanho){
+
+    int double_tamanho = mult(tamanho, tamanho);    
+    
+    media.r /= double_tamanho;
+    media.g /= double_tamanho;
+    media.b /= double_tamanho;
+
+    return media;
+}
+
+Image blur(Image img, int tamanho) {
+    for (unsigned int i = 0; i < img.h; ++i) {
+        for (unsigned int j = 0; j < img.w; ++j) {
+            Pixel media = {0, 0, 0};
+
+            int min_h = min(img.h - 1, i + tamanho/2);
+            int min_w = min(img.w - 1, j + tamanho/2);
+            int max_h = max(0, i - tamanho/2);
+            int max_w = max(0, j - tamanho/2);
+    
+            for(int x = max_h; x <= min_h; ++x) {
+                for(int y = max_w; y <= min_w; ++y) {
+                    
+                    media.r += img.pixel[x][y][0];
+                    media.g += img.pixel[x][y][1];
+                    media.b += img.pixel[x][y][2];
+                }
+            } 
+    
+            media = attach_in_media_tamanho(media, tamanho);
+
+            img.pixel[i][j][0] = media.r;
+            img.pixel[i][j][1] = media.g;
+            img.pixel[i][j][2] = media.b;
+            
+        }
+    }
+
+    return img;
 }
 
 Image rotacionar90direita(Image img) {
@@ -161,37 +229,17 @@ int main() {
 
         switch(opcao) {
             case 1: { // Escala de Cinza
-                img = escala_de_cinza(img);
+                img = gray_scale(img);
                 break;
             }
             case 2: { // Filtro Sepia
-                for (unsigned int x = 0; x < img.h; ++x) {
-                    for (unsigned int j = 0; j < img.w; ++j) {
-                        unsigned short int pixel[3];
-                        pixel[0] = img.pixel[x][j][0];
-                        pixel[1] = img.pixel[x][j][1];
-                        pixel[2] = img.pixel[x][j][2];
-
-                        int p =  pixel[0] * .393 + pixel[1] * .769 + pixel[2] * .189;
-                        int menor_r = (255 >  p) ? p : 255;
-                        img.pixel[x][j][0] = menor_r;
-
-                        p =  pixel[0] * .349 + pixel[1] * .686 + pixel[2] * .168;
-                        menor_r = (255 >  p) ? p : 255;
-                        img.pixel[x][j][1] = menor_r;
-
-                        p =  pixel[0] * .272 + pixel[1] * .534 + pixel[2] * .131;
-                        menor_r = (255 >  p) ? p : 255;
-                        img.pixel[x][j][2] = menor_r;
-                    }
-                }
-
+                img = sepia_filter(img);
                 break;
             }
             case 3: { // Blur
                 int tamanho = 0;
                 scanf("%d", &tamanho);
-                blur(img.h, img.pixel, tamanho, img.w);
+                img = blur(img, tamanho);
                 break;
             }
             case 4: { // Rotacao
