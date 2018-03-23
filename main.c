@@ -1,10 +1,11 @@
 #include <stdio.h>
-// não alterar as variaveis i, j do for, pois são só auxiliares do for para percorrer uma matrix
-// tirar os ifs pela função que já está no codigo que não está sendo usado.
-// tem alguns lugares operadores ternarios que verifica os valores maximos entre dois numeros, ex: max, e criar min
-// usar o comando gitshash para juntar varios commits em um unico, ou usar o --amend
-//
-//
+
+/* Não alterar as variaveis i, j do for, pois são só auxiliares do for para percorrer uma matrix
+* Tirar os ifs pela função que já está no codigo que não está sendo usado.
+* Tem alguns lugares operadores ternarios que verifica os valores maximos entre dois numeros, ex: max, e criar min
+* Usar o comando gitshash para juntar varios commits em um unico, ou usar o --amend
+*/
+
 typedef struct _pixel {
     unsigned short int r;
     unsigned short int g;
@@ -12,10 +13,13 @@ typedef struct _pixel {
 } Pixel;
 
 typedef struct _image {
-    // [width][height][rgb]
-    // 0 -> r
-    // 1 -> g
-    // 2 -> b   gesiel usar a struct pixel
+    
+    /* [width][height][rgb]
+     * 0 -> r
+     * 1 -> g
+     * 2 -> b 
+    */
+
     unsigned short int pixel[512][512][3];
     unsigned int w;
     unsigned int h;
@@ -42,13 +46,6 @@ int mult(int a, int b){
     return a * b;
 }
 
-int pixel_igual(Pixel p1, Pixel p2) {
-    if (p1.r == p2.r &&
-        p1.g == p2.g &&
-        p1.b == p2.b)
-        return 1;
-    return 0;
-}
 
 float calcula_media_img_pixel(Image img, int i, int j){
 
@@ -240,15 +237,19 @@ Image crop_image(Image img, int x, int y, int w, int h) {
 }
 
 Image init_image(Image img){
-    // read type of image
+
+    // Read type of image
+    
     char p3[4];
     scanf("%s", p3);
 
-    // read width height and color of image
+    // Read width height and color of image
+    
     int max_color;
     scanf("%u %u %d", &img.w, &img.h, &max_color);
 
-    // read all pixels of image
+    // Read all pixels of image
+    
     for (unsigned int i = 0; i < img.h; ++i) {
         for (unsigned int j = 0; j < img.w; ++j) {
             scanf("%hu %hu %hu", &img.pixel[i][j][0],
@@ -271,43 +272,64 @@ Image options_img(Image img){
         scanf("%d", &opcao);
 
         switch(opcao) {
-            case 1: { // Escala de Cinza
+
+            // Option of gray scale
+
+            case 1: { 
                 img = gray_scale(img);
                 return img;
                 break;
             }
-            case 2: { // Filtro Sepia
+            case 2: { 
+
+                // Option for sepia filter
+
                 img = sepia_filter(img);
                 return img;
                 break;
             }
-            case 3: { // Blur
+            case 3: { 
+
+                // Option aplicated Blur
+
                 int tamanho = 0;
                 scanf("%d", &tamanho);
                 img = blur(img, tamanho);
                 return img;
                 break;
             }
-            case 4: { // Rotacao
+            case 4: { 
+
+                // Option for rotate 90 right
+
                 int quantas_vezes = 0;
                 scanf("%d", &quantas_vezes);
                 img = rotate_image90_right(img, quantas_vezes);
                 return img;
                 break;
             }
-            case 5: { // Espelhamento
+            case 5: { 
+
+                // Option for vertical mirroring
+
                 int horizontal = 0;
                 scanf("%d", &horizontal);
                 img = vertical_mirroring(img, horizontal);
                 return img;
                 break;
             }
-            case 6: { // Inversao de Cores
+            case 6: { 
+
+                // Option for invert colors
+                
                 img = invert_colors(img);
                 return img;
                 break;
             }
-            case 7: { // Cortar Imagem
+            case 7: { 
+
+                // Option crop
+                
                 int x, y;
                 scanf("%d %d", &x, &y);
                 int w, h;
@@ -324,12 +346,17 @@ Image options_img(Image img){
 
 
 void print_new_image(Image img){
-    // print type of image
+
+    // Print type of image
+    
     printf("P3\n");
-    // print width height and color of image
+    
+    // Print width height and color of image
+    
     printf("%u %u\n255\n", img.w, img.h);
 
-    // print pixels of image
+    // Print pixels of image
+    
     for (unsigned int i = 0; i < img.h; ++i) {
         for (unsigned int j = 0; j < img.w; ++j) {
             printf("%hu %hu %hu ", img.pixel[i][j][0],
