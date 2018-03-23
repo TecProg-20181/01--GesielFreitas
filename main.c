@@ -172,39 +172,74 @@ Image rotate_image90_right(Image img, int quantas_vezes) {
 
     return rotacionada;
 }
+Image vertical_mirroring(Image img, int horizontal){
+    
+    int width = img.w, height = img.h;
 
-void inverter_cores(unsigned short int pixel[512][512][3],
-                    unsigned int w, unsigned int h) {
-    for (unsigned int i = 0; i < h; ++i) {
-        for (unsigned int j = 0; j < w; ++j) {
-            pixel[i][j][0] = 255 - pixel[i][j][0];
-            pixel[i][j][1] = 255 - pixel[i][j][1];
-            pixel[i][j][2] = 255 - pixel[i][j][2];
+    if(horizontal == 1){
+        width /= 2;
+    }else{
+        height /= 2;
+    }
+
+    for (int i2 = 0; i2 < height; ++i2) {
+        for (int j = 0; j < width; ++j) {
+            int x = i2, y = j;
+
+            if (horizontal == 1){
+                y = img.w - 1 - j;
+            }else{
+                x = img.h - 1 - i2;
+            }
+
+            Pixel aux1;
+            aux1.r = img.pixel[i2][j][0];
+            aux1.g = img.pixel[i2][j][1];
+            aux1.b = img.pixel[i2][j][2];
+
+            img.pixel[i2][j][0] = img.pixel[x][y][0];
+            img.pixel[i2][j][1] = img.pixel[x][y][1];
+            img.pixel[i2][j][2] = img.pixel[x][y][2];
+
+            img.pixel[x][y][0] = aux1.r;
+            img.pixel[x][y][1] = aux1.g;
+            img.pixel[x][y][2] = aux1.b;
         }
     }
+
+
+   return img;
+}
+Image invert_colors(Image img) {
+    for (unsigned int i = 0; i < img.h; ++i) {
+        for (unsigned int j = 0; j < img.w; ++j) {
+            img.pixel[i][j][0] = 255 - img.pixel[i][j][0];
+            img.pixel[i][j][1] = 255 - img.pixel[i][j][1];
+            img.pixel[i][j][2] = 255 - img.pixel[i][j][2];
+        }
+    }
+    return img;
 }
 
-Image cortar_imagem(Image img, int x, int y, int w, int h) {
-    Image cortada;
 
-    cortada.w = w;
-    cortada.h = h;
+Image crop_image(Image img, int x, int y, int w, int h) {
+    Image cropped_image;
+
+    cropped_image.w = w;
+    cropped_image.h = h;
 
     for(int i = 0; i < h; ++i) {
         for(int j = 0; j < w; ++j) {
-            cortada.pixel[i][j][0] = img.pixel[i + y][j + x][0];
-            cortada.pixel[i][j][1] = img.pixel[i + y][j + x][1];
-            cortada.pixel[i][j][2] = img.pixel[i + y][j + x][2];
+            cropped_image.pixel[i][j][0] = img.pixel[i + y][j + x][0];
+            cropped_image.pixel[i][j][1] = img.pixel[i + y][j + x][1];
+            cropped_image.pixel[i][j][2] = img.pixel[i + y][j + x][2];
         }
     }
 
-    return cortada;
+    return cropped_image;
 }
 
-
-int main() {
-    Image img;
-
+Image init_image(Image img){
     // read type of image
     char p3[4];
     scanf("%s", p3);
@@ -223,6 +258,11 @@ int main() {
         }
     }
 
+    return img;
+}
+
+Image options_img(Image img){
+
     int n_opcoes;
     scanf("%d", &n_opcoes);
 
@@ -233,58 +273,38 @@ int main() {
         switch(opcao) {
             case 1: { // Escala de Cinza
                 img = gray_scale(img);
+                return img;
                 break;
             }
             case 2: { // Filtro Sepia
                 img = sepia_filter(img);
+                return img;
                 break;
             }
             case 3: { // Blur
                 int tamanho = 0;
                 scanf("%d", &tamanho);
                 img = blur(img, tamanho);
+                return img;
                 break;
             }
             case 4: { // Rotacao
                 int quantas_vezes = 0;
                 scanf("%d", &quantas_vezes);
                 img = rotate_image90_right(img, quantas_vezes);
+                return img;
                 break;
             }
             case 5: { // Espelhamento
                 int horizontal = 0;
                 scanf("%d", &horizontal);
-
-                int w = img.w, h = img.h;
-
-                if (horizontal == 1) w /= 2;
-                else h /= 2;
-
-                for (int i2 = 0; i2 < h; ++i2) {
-                    for (int j = 0; j < w; ++j) {
-                        int x = i2, y = j;
-
-                        if (horizontal == 1) y = img.w - 1 - j;
-                        else x = img.h - 1 - i2;
-
-                        Pixel aux1;
-                        aux1.r = img.pixel[i2][j][0];
-                        aux1.g = img.pixel[i2][j][1];
-                        aux1.b = img.pixel[i2][j][2];
-
-                        img.pixel[i2][j][0] = img.pixel[x][y][0];
-                        img.pixel[i2][j][1] = img.pixel[x][y][1];
-                        img.pixel[i2][j][2] = img.pixel[x][y][2];
-
-                        img.pixel[x][y][0] = aux1.r;
-                        img.pixel[x][y][1] = aux1.g;
-                        img.pixel[x][y][2] = aux1.b;
-                    }
-                }
+                img = vertical_mirroring(img, horizontal);
+                return img;
                 break;
             }
             case 6: { // Inversao de Cores
-                inverter_cores(img.pixel, img.w, img.h);
+                img = invert_colors(img);
+                return img;
                 break;
             }
             case 7: { // Cortar Imagem
@@ -293,13 +313,17 @@ int main() {
                 int w, h;
                 scanf("%d %d", &w, &h);
 
-                img = cortar_imagem(img, x, y, w, h);
+                img = crop_image(img, x, y, w, h);
+                return img;
                 break;
             }
         }
 
     }
+}
 
+
+void print_new_image(Image img){
     // print type of image
     printf("P3\n");
     // print width height and color of image
@@ -315,5 +339,17 @@ int main() {
         }
         printf("\n");
     }
+}
+
+int main() {
+    
+    Image img;
+
+    img = init_image(img);
+
+    img = options_img(img);
+
+    print_new_image(img);
+    
     return 0;
 }
